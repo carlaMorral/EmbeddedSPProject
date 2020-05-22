@@ -1,7 +1,0 @@
-cmake-build-debug/
-.idea/workspace.xml
-.idea/deployment.xml
-.DS_Store
-plot_movement.bat
-plot_movement.py
-movement.log
