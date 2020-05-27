@@ -61,8 +61,7 @@ uint8_t obstaculo(uint16_t x, uint16_t y, const uint32_t *mundo) {
     return false;
 }
 
-void
-sensor_distance(uint16_t x0, uint16_t y0, float theta, const uint32_t *world, uint8_t *sensor_data, uint8_t dbg_msg) {
+void sensor_distance(uint16_t x0, uint16_t y0, float theta, const uint32_t *world, uint8_t *sensor_data, uint8_t dbg_msg) {
     float dx, dy; // Incrementos del vector de desplazamiento en la dirección de un sensor
     float modulo = 0.0; // Módulo del vector de desplazamiento en la dirección de un sensor
     float x = 0.0, y = 0.0; // Componentes del vector de desplazamiento en la dirección de un sensor
@@ -110,8 +109,8 @@ void distance(_robot_pos_t *robot_pos, uint8_t *izq, uint8_t *centro, uint8_t *d
     x0 = robot_pos->x; // Posición del bloque de sensores = Posición del robot
     y0 = robot_pos->y; // Posición del bloque de sensores = Posición del robot
     theta = robot_pos->theta; // Orientación del sensor central, paralela a la del robot
-    theta_l = theta - M_PI / 2;
-    theta_r = theta + M_PI / 2;
+    theta_l = theta + M_PI / 2;
+    theta_r = theta - M_PI / 2;
 
     // Sensor central
     sensor_distance(x0, y0, theta, robot_pos->world, centro, 1);
