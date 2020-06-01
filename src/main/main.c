@@ -24,7 +24,7 @@ uint32_t indice;
  */
 int main(void) {
     pthread_t tid, jid;
-    uint8_t tmp;
+    uint8_t left = 0, center = 0, right = 0;
 
     // Init queues for TX/RX data
     init_queue(&q_tx);
@@ -61,7 +61,7 @@ int main(void) {
         if (simulator_finished) {
             break;
         } else {
-            robot_autonomous_movement();
+            robot_autonomous_movement(left, center, right);
         }
         Get_estado(&estado, &estado_anterior);
         if (estado != estado_anterior) {
@@ -134,11 +134,15 @@ int main(void) {
 /**
  * Automatically update robot movement according to sensor data
  */
-void robot_autonomous_movement(void) {
+void robot_autonomous_movement(uint8_t left, uint8_t center, uint8_t right) {
     // TODO: algorithm implementation
     // read sensor data, get obstacle, max/min distance
     // if/elseif/switch conditions to call the appropriate movement function
-    //dyn_moveForward(MAX_SPEED);
+    dyn_distance_wall_left(3,&left);
+    dyn_distance_wall_center(3,&center);
+    dyn_distance_wall_right(3,&right);
+
+
 }
 
 /**

@@ -5,6 +5,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <stdint.h>
+
 /*
  * Set project wide debug level (>)
  *   1.
@@ -18,6 +20,6 @@
 void execute_P4_tests(void);
 
 // Robot autonomous movement function
-void robot_autonomous_movement(void);
+void robot_autonomous_movement(uint8_t,uint8_t,uint8_t);
 
 #endif /* MAIN_H */
