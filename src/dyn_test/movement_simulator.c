@@ -152,8 +152,8 @@ void init_movement_simulator(const uint32_t *world) {
     robot_pos_str.sim_step = 0;
     robot_pos_str.world = world;
     simulator_finished = false;
-
     t_last_upd = clock();
+    update_sensor_data();
 
 #if DEBUG_LEVEL > 2
     fichero = fopen(OUTPUT_FILE, "w+"); // Creación del fichero de salida, en escritura
@@ -221,5 +221,5 @@ void check_simulation_end() {
 void end_simulator() {
     simulator_finished = true;
     fclose(fichero);
-    pthread_exit(NULL);
+    //pthread_exit(NULL);
 }

@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <assert.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "main.h"
 #include "../dyn/dyn_app_motors.h"
@@ -25,6 +26,8 @@ uint32_t indice;
 int main(void) {
     pthread_t tid, jid;
     uint8_t left = 0, center = 0, right = 0;
+    bool paret_trobada = false;
+    int paret;
 
     // Init queues for TX/RX data
     init_queue(&q_tx);
@@ -56,13 +59,18 @@ int main(void) {
     printf("\nPulsar 'q' para terminar, qualquier tecla para seguir: \n");
     fflush(stdout);
 
+    buscar_paret(left,center,right,&paret);
+
     // Main loop
-    while (estado != Quit) {
-        if (simulator_finished) {
-            break;
-        } else {
+    while (estado!=Quit || !simulator_finished) {
+
+        if(!paret_trobada){
+            aproparse_paret(center, &paret_trobada);
+        }
+        else{
             robot_autonomous_movement(left, center, right);
         }
+
         Get_estado(&estado, &estado_anterior);
         if (estado != estado_anterior) {
             Set_estado_anterior(estado);
@@ -132,16 +140,69 @@ int main(void) {
 }
 
 /**
+ * Searches the closest wall
+ */
+void buscar_paret(uint8_t left, uint8_t center, uint8_t right, int* paret) {
+
+        dyn_distance_wall_left(3,&left);
+        dyn_distance_wall_center(3,&center);
+        dyn_distance_wall_right(3,&right);
+
+        if(left < center){
+            if(left < right) *paret = 0;
+            else *paret = 2;
+        }
+        else *paret = 1;
+
+        if(*paret == 0){
+            dyn_turnLeft_onSelf(500);
+            while(center != left){
+                dyn_distance_wall_center(3,&center);
+            }
+        }
+
+        else if(*paret == 2){
+            dyn_turnRight_onSelf(500);
+            while(right != center){
+                dyn_distance_wall_center(3,&center);
+            }
+        }
+
+        dyn_moveForward(500);
+}
+
+void aproparse_paret(uint8_t center, bool* paret_trobada){
+
+    dyn_distance_wall_center(3,&center);
+    if(center < 10){
+        *paret_trobada = true;
+    }
+
+}
+
+/**
  * Automatically update robot movement according to sensor data
  */
 void robot_autonomous_movement(uint8_t left, uint8_t center, uint8_t right) {
-    // TODO: algorithm implementation
-    // read sensor data, get obstacle, max/min distance
-    // if/elseif/switch conditions to call the appropriate movement function
+
     dyn_distance_wall_left(3,&left);
     dyn_distance_wall_center(3,&center);
     dyn_distance_wall_right(3,&right);
 
+    // Unic cas en que es va recte. No tenim obstacles i complim les distancies.
+    if(left >= 2 && left <= 10 && center > 10){
+        dyn_moveForward(500);
+    }
+
+    // Cas quan toco la pared de frent o cas cantonada interior
+    else if(center <= 10){
+        dyn_turnRight_onSelf(100);
+    }
+
+    // Cas cantonada exterior
+    else if(left > 10){
+        dyn_turnLeft(200);
+    }
 
 }
 

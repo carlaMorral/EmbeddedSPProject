@@ -106,8 +106,8 @@ int dyn_turnRight(unsigned int speed) {
  * Self Turn to the left
  */
 int dyn_turnLeft_onSelf(unsigned int speed) {
-    int l = dyn_moveWheel(ID_MOTOR_LEFT, DIRECTION_LEFT, speed);
-    int r = dyn_moveWheel(ID_MOTOR_RIGHT, DIRECTION_RIGHT, speed);
+    int l = dyn_moveWheel(ID_MOTOR_LEFT, DIRECTION_RIGHT, speed);
+    int r = dyn_moveWheel(ID_MOTOR_RIGHT, DIRECTION_LEFT, speed);
     return (l == 0 && r == 0) ? 0 : 1;
 }
 
@@ -115,8 +115,8 @@ int dyn_turnLeft_onSelf(unsigned int speed) {
  * Self Turn to the right
  */
 int dyn_turnRight_onSelf(unsigned int speed) {
-    int l = dyn_moveWheel(ID_MOTOR_LEFT, DIRECTION_RIGHT, speed);
-    int r = dyn_moveWheel(ID_MOTOR_RIGHT, DIRECTION_LEFT, speed);
+    int l = dyn_moveWheel(ID_MOTOR_LEFT, DIRECTION_LEFT, speed);
+    int r = dyn_moveWheel(ID_MOTOR_RIGHT, DIRECTION_RIGHT, speed);
     return (l == 0 && r == 0) ? 0 : 1;
 }
 

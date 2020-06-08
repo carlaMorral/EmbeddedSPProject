@@ -19,12 +19,12 @@ volatile uint16_t UCA2STATW = 0;
 
 // Configuració de la línia de dades Half Duplex: recepció
 void Sentit_Dades_Rx_emu(void) {
-    printf("\nHAL_DYN_UART: Changed direction to RX\n");
+    //printf("\nHAL_DYN_UART: Changed direction to RX\n");
 }
 
 // Configuració de la línia de dades Half Duplex: transmissió
 void Sentit_Dades_Tx_emu(void) {
-    printf("\nHAL_DYN_UART: Changed direction to TX\n");
+    //printf("\nHAL_DYN_UART: Changed direction to TX\n");
 }
 
 void TxUAC2_emu(byte bTxdData) {
