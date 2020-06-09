@@ -204,6 +204,13 @@ void robot_autonomous_movement(uint8_t left, uint8_t center, uint8_t right) {
         dyn_turnLeft(200);
     }
 
+    // Cas s'ajunta massa a la pared i cal separar-se
+    /*
+    else if(left < 2){
+        dyn_turnRight(200);
+    }
+    */
+
 }
 
 /**
