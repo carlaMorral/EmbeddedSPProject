@@ -17,17 +17,20 @@
 #include "../simulator/habitacion_001.h"
 #include "../simulator/posicion.h"
 
+// Joystick variables
 uint8_t estado = Ninguno, estado_anterior = Ninguno, finalizar = 0;
 uint32_t indice;
+
+// Robot variables
+uint8_t left = 0, center = 0, right = 0; // Distances
+bool wall_found = false;
+int wall;
 
 /**
  * Main function
  */
 int main(void) {
     pthread_t tid, jid;
-    uint8_t left = 0, center = 0, right = 0;
-    bool paret_trobada = false;
-    int paret;
 
     // Init queues for TX/RX data
     init_queue(&q_tx);
@@ -49,7 +52,7 @@ int main(void) {
     dyn_setMode_EndlessTurn(ID_MOTOR_RIGHT);
     dyn_led_control(ID_MOTOR_LEFT, 1);
     dyn_led_control(ID_MOTOR_RIGHT, 1);
-    dyn_stop();
+    dyn_stop(); // Actually unneeded since it's not moving yet
 
     // Room info
     printf("\nDimensiones habitación: %d ancho x %d largo mm2\n", ANCHO, LARGO);
@@ -59,16 +62,20 @@ int main(void) {
     printf("\nPulsar 'q' para terminar, qualquier tecla para seguir: \n");
     fflush(stdout);
 
-    buscar_paret(left,center,right,&paret);
+    // Search the closest wall
+    robot_search_wall();
 
     // Main loop
-    while (estado!=Quit || !simulator_finished) {
+    while (estado != Quit && !simulator_finished) {
 
-        if(!paret_trobada){
-            aproparse_paret(center, &paret_trobada);
-        }
-        else{
-            robot_autonomous_movement(left, center, right);
+        if (!wall_found) {
+            robot_approach_wall();
+        } else {
+            if (wall == WALL_LEFT) {
+                robot_autonomous_movement_left();
+            } else {
+                robot_autonomous_movement_right();
+            }
         }
 
         Get_estado(&estado, &estado_anterior);
@@ -140,77 +147,91 @@ int main(void) {
 }
 
 /**
- * Searches the closest wall
+ * Search the closest wall
  */
-void buscar_paret(uint8_t left, uint8_t center, uint8_t right, int* paret) {
+void robot_search_wall(void) {
+    dyn_distance_wall_left(ID_SENSOR, &left);
+    dyn_distance_wall_center(ID_SENSOR, &center);
+    dyn_distance_wall_right(ID_SENSOR, &right);
 
-        dyn_distance_wall_left(3,&left);
-        dyn_distance_wall_center(3,&center);
-        dyn_distance_wall_right(3,&right);
+    // Mirem quina és la paret més propera
+    if (left < center || right < center) {
+        wall = (left <= right)? WALL_LEFT : WALL_RIGHT;
 
-        if(left < center){
-            if(left < right) *paret = 0;
-            else *paret = 2;
-        }
-        else *paret = 1;
+        // Orientem el robot adequadament
+        if (wall == WALL_LEFT)
+            dyn_turnLeft_onSelf(1000);
+        else
+            dyn_turnRight_onSelf(1000);
 
-        if(*paret == 0){
-            dyn_turnLeft_onSelf(500);
-            while(center != left){
-                dyn_distance_wall_center(3,&center);
-            }
-        }
-
-        else if(*paret == 2){
-            dyn_turnRight_onSelf(500);
-            while(right != center){
-                dyn_distance_wall_center(3,&center);
-            }
-        }
-
-        dyn_moveForward(500);
-}
-
-void aproparse_paret(uint8_t center, bool* paret_trobada){
-
-    dyn_distance_wall_center(3,&center);
-    if(center < 10){
-        *paret_trobada = true;
+    } else {
+        wall = WALL_LEFT; // Default side to follow once center wall is reached
     }
 
+    // Anem cap a la paret
+    dyn_moveForward(500);
 }
 
 /**
- * Automatically update robot movement according to sensor data
+ * Approach to the closest wall
  */
-void robot_autonomous_movement(uint8_t left, uint8_t center, uint8_t right) {
+void robot_approach_wall(void) {
+    dyn_distance_wall_center(ID_SENSOR, &center);
+    if (center <= 10) {
+        wall_found = true;
+    }
+}
 
-    dyn_distance_wall_left(3,&left);
-    dyn_distance_wall_center(3,&center);
-    dyn_distance_wall_right(3,&right);
+/**
+ * (LEFT) Automatically update robot movement according to sensor data
+ */
+void robot_autonomous_movement_left(void) {
+    // Llegim els sensors
+    dyn_distance_wall_left(ID_SENSOR, &left);
+    dyn_distance_wall_center(ID_SENSOR, &center);
+    dyn_distance_wall_right(ID_SENSOR, &right);
 
-    // Unic cas en que es va recte. No tenim obstacles i complim les distancies.
-    if(left >= 2 && left <= 10 && center > 10){
+    // Cas en que davant no hi ha obstacles i es compleixen les distancies de seguretat
+    if (left > 2 && left < 10 && center > 10) {
         dyn_moveForward(500);
     }
 
-    // Cas quan toco la pared de frent o cas cantonada interior
-    else if(center <= 10){
+    // Cas paret frontal o cantonada interior
+    else if (center <= 10) {
         dyn_turnRight_onSelf(100);
     }
 
-    // Cas cantonada exterior
-    else if(left > 10){
+    // Cas cantonada exterior o massa lluny de la paret
+    else if (left >= 10) {
         dyn_turnLeft(200);
     }
 
-    // Cas s'ajunta massa a la pared i cal separar-se
-    /*
-    else if(left < 2){
+    // Cas massa pròxim a la paret
+    else if (left <= 2) {
         dyn_turnRight(200);
     }
-    */
+}
 
+/**
+ * (RIGHT) Automatically update robot movement according to sensor data
+ */
+void robot_autonomous_movement_right(void) {
+    dyn_distance_wall_left(ID_SENSOR, &left);
+    dyn_distance_wall_center(ID_SENSOR, &center);
+    dyn_distance_wall_right(ID_SENSOR, &right);
+
+    if (right > 2 && right < 10 && center > 10) {
+        dyn_moveForward(500);
+    }
+    else if (center <= 10) {
+        dyn_turnLeft_onSelf(100);
+    }
+    else if (right >= 10) {
+        dyn_turnRight(200);
+    }
+    else if (right <= 2) {
+        dyn_turnLeft(200);
+    }
 }
 
 /**
@@ -272,10 +293,8 @@ void execute_P4_tests(void) {
     // *** Test robot movement ***
     // Aquestes funcions es limiten a cridar dyn_moveWheel per cada roda,
     // per tal de posar els valors de velocitat i direcció oportuns.
-    // Per tant, no és realment necessari testejar-les totes ja que
+    // Per tant, no és realment necessari testejar-les aquí ja que
     // en el test anterior s'ha vist la lectura i escriptura d'aquests valors per cada motor.
-
-    // Tot i així, veiem algunes ...
 
     // Move forward
     printf("\nMAIN: Moving Robot Forward with speed 500");
@@ -285,54 +304,10 @@ void execute_P4_tests(void) {
     assert(direction == 0);
     assert(speed == 500);
     dyn_read_GoalSpeed(ID_MOTOR_RIGHT, &direction, &speed);
-    assert(direction == 1);
-    assert(speed == 500);
-
-    // Move backward
-    printf("\nMAIN: Moving Robot Backward with speed 500");
-    dyn_moveBackward(500);
-
-    dyn_read_GoalSpeed(ID_MOTOR_LEFT, &direction, &speed);
-    assert(direction == 1);
-    assert(speed == 500);
-    dyn_read_GoalSpeed(ID_MOTOR_RIGHT, &direction, &speed);
     assert(direction == 0);
     assert(speed == 500);
 
-    // Self turn to the right
-    printf("\nMAIN: Self turning Robot to the Right with speed 800");
-    dyn_turnRight_onSelf(800);
-
-    dyn_read_GoalSpeed(ID_MOTOR_LEFT, &direction, &speed);
-    assert(direction == 0);
-    assert(speed == 800);
-    dyn_read_GoalSpeed(ID_MOTOR_RIGHT, &direction, &speed);
-    assert(direction == 0);
-    assert(speed == 800);
-
-    // Self turn to the left
-    printf("\nMAIN: Self turning Robot to the Left with speed 800");
-    dyn_turnLeft_onSelf(800);
-
-    dyn_read_GoalSpeed(ID_MOTOR_LEFT, &direction, &speed);
-    assert(direction == 1);
-    assert(speed == 800);
-    dyn_read_GoalSpeed(ID_MOTOR_RIGHT, &direction, &speed);
-    assert(direction == 1);
-    assert(speed == 800);
-
-    // Turn left
-    printf("\nMAIN: Moving Robot to the Left with speed 200");
-    dyn_turnLeft(200);
-
-    dyn_read_GoalSpeed(ID_MOTOR_LEFT, &direction, &speed);
-    assert(direction == 1);
-    assert(speed == 0);
-    dyn_read_GoalSpeed(ID_MOTOR_RIGHT, &direction, &speed);
-    assert(direction == 1);
-    assert(speed == 200);
-
-    // ++ turn right, stop
+    // ++
 
     /*
     // ** Testing default (hard-coded) values of the IR sensor **

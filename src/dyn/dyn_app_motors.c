@@ -88,7 +88,7 @@ int dyn_moveBackward(unsigned int speed) {
  * Turn to the left
  */
 int dyn_turnLeft(unsigned int speed) {
-    int l = dyn_moveWheel(ID_MOTOR_LEFT, DIRECTION_LEFT, 0);
+    int l = dyn_moveWheel(ID_MOTOR_LEFT, DIRECTION_LEFT, speed/2);
     int r = dyn_moveWheel(ID_MOTOR_RIGHT, DIRECTION_LEFT, speed);
     return (l == 0 && r == 0) ? 0 : 1;
 }
@@ -98,7 +98,7 @@ int dyn_turnLeft(unsigned int speed) {
  */
 int dyn_turnRight(unsigned int speed) {
     int l = dyn_moveWheel(ID_MOTOR_LEFT, DIRECTION_LEFT, speed);
-    int r = dyn_moveWheel(ID_MOTOR_RIGHT, DIRECTION_LEFT, 0);
+    int r = dyn_moveWheel(ID_MOTOR_RIGHT, DIRECTION_LEFT, speed/2);
     return (l == 0 && r == 0) ? 0 : 1;
 }
 

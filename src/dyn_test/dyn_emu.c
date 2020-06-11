@@ -240,7 +240,9 @@ void *dyn_emu(void *vargp) {
     init_movement_simulator(world);
 
     while (true) {
-        update_movement_simulator_values();
+        if (!simulator_finished) {
+            update_movement_simulator_values();
+        }
 
         if (is_rx_state) {
             if (queue_is_empty(&q_tx)) {

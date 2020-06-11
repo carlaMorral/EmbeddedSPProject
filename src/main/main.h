@@ -15,17 +15,21 @@
  *   3. Print distance information
  *   4.
  */
-#define DEBUG_LEVEL 3
+#define DEBUG_LEVEL 4
+
+#define WALL_LEFT 0
+#define WALL_CENTER 1
+#define WALL_RIGHT 2
 
 // Tests function
 void execute_P4_tests(void);
 
-// Robot autonomous movement function
-void robot_autonomous_movement(uint8_t,uint8_t,uint8_t);
+// Robot autonomous movement functions
+void robot_autonomous_movement_left(void);
+void robot_autonomous_movement_right(void);
 
-//Find wall
-void buscar_paret(uint8_t left, uint8_t center, uint8_t right, int* paret);
-
-void aproparse_paret(uint8_t center, bool* paret_trobada);
+// Find wall functions
+void robot_search_wall(void);
+void robot_approach_wall(void);
 
 #endif /* MAIN_H */

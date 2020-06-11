@@ -26,7 +26,7 @@
 typedef uint8_t dyn_matrix_t[N_DEVICES][DYN_MAX_POS];
 dyn_matrix_t dyn_mem;
 
-__volatile bool simulator_finished;
+volatile bool simulator_finished;
 
 void *dyn_emu(void *vargp);
 
