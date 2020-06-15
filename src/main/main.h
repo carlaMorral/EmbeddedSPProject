@@ -26,7 +26,6 @@ void execute_P4_tests(void);
 
 // Robot autonomous movement functions
 void robot_autonomous_movement_left(void);
-void robot_autonomous_movement_right(void);
 
 // Find wall functions
 void robot_search_wall(void);

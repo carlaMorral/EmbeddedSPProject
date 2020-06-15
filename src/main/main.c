@@ -71,11 +71,8 @@ int main(void) {
         if (!wall_found) {
             robot_approach_wall();
         } else {
-            if (wall == WALL_LEFT) {
-                robot_autonomous_movement_left();
-            } else {
-                robot_autonomous_movement_right();
-            }
+            // Follow the wall clockwise (It will always be on the left side of the robot)
+            robot_autonomous_movement_left();
         }
 
         Get_estado(&estado, &estado_anterior);
@@ -209,28 +206,6 @@ void robot_autonomous_movement_left(void) {
     // Cas massa pròxim a la paret
     else if (left <= 2) {
         dyn_turnRight(200);
-    }
-}
-
-/**
- * (RIGHT) Automatically update robot movement according to sensor data
- */
-void robot_autonomous_movement_right(void) {
-    dyn_distance_wall_left(ID_SENSOR, &left);
-    dyn_distance_wall_center(ID_SENSOR, &center);
-    dyn_distance_wall_right(ID_SENSOR, &right);
-
-    if (right > 2 && right < 10 && center > 10) {
-        dyn_moveForward(500);
-    }
-    else if (center <= 10) {
-        dyn_turnLeft_onSelf(100);
-    }
-    else if (right >= 10) {
-        dyn_turnRight(200);
-    }
-    else if (right <= 2) {
-        dyn_turnLeft(200);
     }
 }
 
